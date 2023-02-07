@@ -11,9 +11,8 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
-    int value = 0;
     TextView textView;
-    MainHandler handler;
+    Handler handler = new Handler(); //API의 기본 핸들러 객체 생성하기
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,10 +30,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        handler = new MainHandler();
     }
 
     class BackgroundThread extends Thread {
+        int value = 0;
+
         public void run() {
             for (int i = 0; i < 100; i++) {
                 try {
@@ -45,24 +45,16 @@ public class MainActivity extends AppCompatActivity {
                 value += 1;
                 Log.d("Thread", "value : " + value);
 
-                Message message = handler.obtainMessage();
-                Bundle bundle = new Bundle();
-                bundle.putInt("value", value);
-                message.setData(bundle);
+                handler.post(new Runnable() { //핸들러의 post 메서드 호출하기
+                    @Override
+                    public void run() {
+                        textView.setText("value 값 : " + value);
+                    }
+                });
 
-                handler.sendMessage(message); //핸들러로 메시지 객체 보내기
             }
         }
     }
 
-    class MainHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg){ //핸들러 안에서 전달받은 메시지 객체 처리하기
-            super.handleMessage(msg);
 
-            Bundle bundle = msg.getData();
-            int value = bundle.getInt("value");
-            textView.setText("value 값 : " + value);
-        }
-    }
 }
